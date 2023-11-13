@@ -1,0 +1,286 @@
+#!/bin/sh
+#------------------------------------------------------------------------------
+# =========                 |
+# \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+#  \\    /   O peration     |
+#   \\  /    A nd           | www.openfoam.com
+#    \\/     M anipulation  |
+#-------------------------------------------------------------------------------
+#    Copyright (C) 2011-2016 OpenFOAM Foundation
+#    Copyright (C) 2021 OpenCFD Ltd.
+#------------------------------------------------------------------------------
+# License
+#     This file is part of OpenFOAM, distributed under GPL-3.0-or-later.
+#
+# Script
+#     plot
+#
+# Description
+#     Creates .png graphs of OpenFOAM results vs experiment for the buoyant
+#     cavity case
+#
+#------------------------------------------------------------------------------
+cd "${0%/*}" || exit                                # Run from this directory
+#------------------------------------------------------------------------------
+
+# . ${WM_PROJECT_DIR:?}/etc/bashrc        # Tutorial run functions
+
+# settings
+
+    # stop on first error
+    set -e
+
+
+#------------------------------------------------------------------------------
+
+plot_yT()
+{
+    index="$1"
+    sampleFile="$2"
+
+    image="yProfile_T_z$index.png"
+
+    yMaxSamples="6"
+
+    gnuplot<<PLT_YT
+
+    set tmargin 2
+    set label 1 center at screen 0.5,0.92 "x = 1.0 m, z = $index m"
+
+    set terminal pngcairo font "helvetica,20" size 800, 500
+    set grid
+    # set key left top
+    unset key
+    set xrange [0:1]
+    set xlabel "Non-dimensional position, y/Y"
+    #set yrange [285:310]
+    set ylabel "Temperature / (K)"
+    set output "$image"
+
+    # OpenFOAM
+        samples="$sampleFile"
+
+    plot \
+        samples u (\$1/$yMaxSamples):2 w lp lt -1 pt 20
+PLT_YT
+}
+
+
+plot_yU()
+{
+    index=$1
+    sampleFile="$2"
+
+    image="yProfile_U_z$index.png"
+
+    yMaxSamples="6"
+
+    gnuplot<<PLT_YU
+
+    set style line 1 linewidth 3 linecolor rgbcolor "#FF0000" # red
+    set style line 2 linewidth 3 linecolor rgbcolor "#0000FF" # blue
+    set style line 3 linewidth 3 linecolor rgbcolor "#808000" # olive
+    set style line 4 linewidth 3 linecolor rgbcolor "#800080" # purple
+    set style line 5 linewidth 3 linecolor rgbcolor "#008000" # green
+    set style line 6 linewidth 3 linecolor rgbcolor "#00ffff" # aqua
+    set style line 7 linewidth 3 linecolor rgbcolor "#000080" # navy
+    set style line 8 linewidth 3 linecolor rgbcolor "#800000" # maroon
+
+    set tmargin 2
+    set label 1 center at screen 0.5,0.92 "x = 1.0 m, z = $index m"
+
+    set terminal pngcairo font "helvetica,20" size 800, 500
+    set grid
+    set key right top
+    set xrange [0:1]
+    set xlabel "Non-dimensional position, y/Y"
+    # set yrange [-0.2:0.2]
+    set ylabel "Velocity Components / (m/s)"
+    set output "$image"
+
+    # OpenFOAM
+        samples="$sampleFile"
+
+    plot \
+        samples u (\$1/$yMaxSamples):3 title "Ux" w lp linestyle 1 pt 20, \
+        samples u (\$1/$yMaxSamples):4 title "Uy" w lp linestyle 2 pt 20, \
+        samples u (\$1/$yMaxSamples):5 title "Uz" w lp linestyle 3 pt 20
+PLT_YU
+}
+
+plot_zT()
+{
+    index="$1"
+    sampleFile="$2"
+
+    image="zProfile_T_y$index.png"
+
+    zMaxSamples="2"
+
+    gnuplot<<PLT_ZT
+
+    set tmargin 2
+    set label 1 center at screen 0.5,0.95 "x = 1.0 m, y = $index m"
+
+    set terminal pngcairo font "helvetica,20" size 500, 800
+    set grid
+    # set key left top
+    unset key
+    set yrange [0:1]
+    set ylabel "Non-dimensional position, z/Z"
+    #set yrange [285:310]
+    set xlabel "Temperature / (K)"
+    set output "$image"
+
+    # OpenFOAM
+        samples="$sampleFile"
+
+    plot \
+        samples u 2:(\$1/$zMaxSamples) w lp lt -1 pt 20
+PLT_ZT
+}
+
+plot_zU()
+{
+    index=$1
+    sampleFile="$2"
+
+    image="zProfile_U_y$index.png"
+
+    zMaxSamples="2"
+
+    gnuplot<<PLT_ZU
+
+    set style line 1 linewidth 3 linecolor rgbcolor "#FF0000" # red
+    set style line 2 linewidth 3 linecolor rgbcolor "#0000FF" # blue
+    set style line 3 linewidth 3 linecolor rgbcolor "#808000" # olive
+    set style line 4 linewidth 3 linecolor rgbcolor "#800080" # purple
+    set style line 5 linewidth 3 linecolor rgbcolor "#008000" # green
+    set style line 6 linewidth 3 linecolor rgbcolor "#00ffff" # aqua
+    set style line 7 linewidth 3 linecolor rgbcolor "#000080" # navy
+    set style line 8 linewidth 3 linecolor rgbcolor "#800000" # maroon
+
+    set tmargin 2
+    set label 1 center at screen 0.5,0.95 "x = 1.0 m, z = $index m"
+
+    set terminal pngcairo font "helvetica,20" size 500, 800
+    set grid
+    set key right bottom
+    set yrange [0:1]
+    set ylabel "Non-dimensional position, z/Z"
+    # set yrange [-0.2:0.2]
+    set xlabel "Velocity Components / (m/s)"
+    set output "$image"
+
+    # OpenFOAM
+        samples="$sampleFile"
+
+    plot \
+        samples u 3:(\$1/$zMaxSamples) title "Ux" w lp linestyle 1 pt 20, \
+        samples u 4:(\$1/$zMaxSamples) title "Uy" w lp linestyle 2 pt 20, \
+        samples u 5:(\$1/$zMaxSamples) title "Uz" w lp linestyle 3 pt 20
+PLT_ZU
+}
+
+#------------------------------------------------------------------------------
+
+# Requires "gnuplot"
+command -v gnuplot >/dev/null || {
+    echo "FOAM FATAL ERROR: gnuplot not found - skipping graph creation" 1>&2
+    exit 1
+}
+
+SETSDIR="../postProcessing/sample"
+
+[ -d "$SETSDIR" ] || {
+    echo "FOAM FATAL ERROR: result sets not available in directory $SETSDIR" 1>&2
+    exit 1
+}
+
+
+#------------------------------------------------------------------------------
+
+echo ""
+echo "# Plot:"
+echo ""
+
+# paths to data
+#LATESTTIME=$(ls $SETSDIR)
+#LATESTTIME=$(foamListTimes -case ../ -latestTime)
+LATESTTIME=$(foamListTimes -case ../ -latestTime -processor)
+#LATESTTIME="1000"
+OFDATAROOT="$SETSDIR/$LATESTTIME"
+
+# generate temperature and velocity y-profiles
+Sets="0.0 0.5 1.0 1.5 2.0"
+for i in $Sets
+do
+
+    echo "    processing T and U profile at z = $i"
+
+    OF="$OFDATAROOT/z${i}_T_U.xy"
+    plot_yT "$i" "$OF"
+    plot_yU "$i" "$OF"
+
+done
+
+# generate temperature and velocity y-profiles
+Sets="0 1 2 3 4 5 6"
+for i in $Sets
+do
+
+    echo "    processing T and U z-profile at y = $i"
+
+    OF="$OFDATAROOT/y${i}_T_U.xy"
+    plot_zT "$i" "$OF"
+    plot_zU "$i" "$OF"
+
+done
+
+
+image="TemperatureComparison.png"
+zMaxSamples="2"
+
+gnuplot<<PLT_T_COMP
+
+    set style line 1 linewidth 3 linecolor rgbcolor "#FF0000" # red
+    set style line 2 linewidth 3 linecolor rgbcolor "#0000FF" # blue
+    set style line 3 linewidth 3 linecolor rgbcolor "#808000" # olive
+    set style line 4 linewidth 3 linecolor rgbcolor "#800080" # purple
+    set style line 5 linewidth 3 linecolor rgbcolor "#008000" # green
+    set style line 6 linewidth 3 linecolor rgbcolor "#00ffff" # aqua
+    set style line 7 linewidth 3 linecolor rgbcolor "#000080" # navy
+    set style line 8 linewidth 3 linecolor rgbcolor "#800000" # maroon
+
+    set terminal pngcairo font "helvetica,20" size 800, 800 
+    set tmargin 2
+    set label 1 center at screen 0.5,0.95 "x = 1.0 m"
+
+    set terminal pngcairo font "helvetica,20" size 500, 800
+    set grid
+    set key right bottom
+    set yrange [0:1]
+    set ylabel "Non-dimensional position, z/Z"
+    set xrange [25:50]
+    set xlabel "Temperature /  (°C)"
+    set output "$image"
+
+    OF1="$OFDATAROOT/y1_T_U.xy"
+    OF2="$OFDATAROOT/y2_T_U.xy"
+    OF3="$OFDATAROOT/y3_T_U.xy"
+    OF4="$OFDATAROOT/y4_T_U.xy"
+    OF5="$OFDATAROOT/y5_T_U.xy"
+
+    plot \
+        OF1 u (\$2-273.15):(\$1/$zMaxSamples) title "y = 1 m" w lp linestyle 1 pt 20, \
+        OF2 u (\$2-273.15):(\$1/$zMaxSamples) title "y = 2 m" w lp linestyle 2 pt 20, \
+        OF3 u (\$2-273.15):(\$1/$zMaxSamples) title "y = 3 m" w lp linestyle 3 pt 20, \
+        OF4 u (\$2-273.15):(\$1/$zMaxSamples) title "y = 4 m" w lp linestyle 4 pt 20, \
+        OF5 u (\$2-273.15):(\$1/$zMaxSamples) title "y = 5 m" w lp linestyle 5 pt 20
+PLT_T_COMP
+
+
+echo "End"
+
+
+#------------------------------------------------------------------------------

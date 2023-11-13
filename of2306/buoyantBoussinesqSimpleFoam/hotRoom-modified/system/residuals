@@ -1,0 +1,38 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  3.0.1                                 |  
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      residuals;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+residuals
+{
+    // for OpenFOAM v2106
+    libs ("libutilityFunctionObjects.so");
+    type            solverInfo;
+    // for OpenFOAM v1806
+    //functionObjectLibs ("libutilityFunctionObjects.so");
+    //type            residuals;
+
+    // Solver information is written to the directory according to the executeControl settings:
+    //    $FOAM_CASE/postProcessing/<functionObject>/<timeDir>
+    executeControl writeTime;
+    //executeInterval 5;
+    
+    writeControl   timeStep;
+    writeInterval  5; //50;
+
+    fields ( p_rgh U T k omega);
+
+}
+
+// ************************************************************************* //
